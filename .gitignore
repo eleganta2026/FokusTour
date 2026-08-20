@@ -1,0 +1,42 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]serSettings/
+MemoryCaptures/
+Recordings/
+ExportedObj/
+.utmp/
+
+# Unity crash / debug
+sysinfo.txt
+*.stacktrace
+*.log
+
+# IDE / OS
+.vs/
+.vscode/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+.DS_Store
+
+# Builds & keys
+*.apk
+*.aab
+*.app
+*.ipa
+*.keystore
+*.jks
+
+# Packages lock is kept; local caches are not
+.gradle/

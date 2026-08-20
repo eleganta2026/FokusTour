@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd751561d3af44956ab925f5e1dacf6e, type: 3}
+  m_Name: Artwork_01_08
+  m_EditorClassIdentifier: Assembly-CSharp::FokusTour.Artwork.ArtworkData
+  title: Busana Pengantin Minangkabau
+  creatorName: Aslan
+  description: Foto pasangan model yang mengenakan busana pengantin adat Minangkabau
+    berwarna merah dan emas. Wanita memakai suntiang, sementara pria mengenakan saluak
+    dan songket di atas panggung malam.
+  previewImage: {fileID: 2800000, guid: 699153794ebf44fd4b1626a5189218f6, type: 3}
