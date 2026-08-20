@@ -37,6 +37,8 @@ sysinfo.txt
 *.ipa
 *.keystore
 *.jks
+FokusTour_BackUpThisFolder_ButDontShipItWithYourGame/
+FokusTour_BurstDebugInformation_DoNotShip/
 
 # Packages lock is kept; local caches are not
 .gradle/
