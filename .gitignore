@@ -42,3 +42,6 @@ FokusTour_BurstDebugInformation_DoNotShip/
 
 # Packages lock is kept; local caches are not
 .gradle/
+
+# Skripsi / dokumentasi lokal (tidak ikut ke GitHub)
+Docs/
