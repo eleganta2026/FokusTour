@@ -76,7 +76,11 @@ namespace FokusTour.Player
             if (artworkInfoUI == null)
                 return;
 
-            artworkInfoUI.Open(_currentArtwork.Data, OnInfoClosed);
+            ArtworkItem item = _currentArtwork.GetActiveItem();
+            if (item == null)
+                return;
+
+            artworkInfoUI.Open(item, OnInfoClosed);
             SetPromptVisible(false);
             SetPlayerControlEnabled(false);
         }

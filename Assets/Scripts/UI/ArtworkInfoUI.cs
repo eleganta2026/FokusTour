@@ -58,28 +58,28 @@ namespace FokusTour.UI
                 Close();
         }
 
-        public void Open(ArtworkData data, Action onClosed = null)
+        public void Open(ArtworkItem item, Action onClosed = null)
         {
-            if (data == null)
+            if (item == null || !item.HasMetadata)
                 return;
 
             _onClosed = onClosed;
 
             if (titleText != null)
-                titleText.text = data.Title;
+                titleText.text = item.Title;
 
             if (creatorText != null)
-                creatorText.text = $"Fotografer: {data.CreatorName}";
+                creatorText.text = $"Fotografer: {item.CreatorName}";
 
             if (descriptionText != null)
-                descriptionText.text = data.Description;
+                descriptionText.text = item.Description;
 
             if (previewImage != null)
             {
-                bool hasImage = data.PreviewImage != null;
+                bool hasImage = item.PreviewTexture != null;
                 previewImage.gameObject.SetActive(hasImage);
                 if (hasImage)
-                    previewImage.texture = data.PreviewImage;
+                    previewImage.texture = item.PreviewTexture;
             }
 
             if (panelRoot != null)

@@ -1,3 +1,4 @@
+using FokusTour.Api;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -103,6 +104,12 @@ namespace FokusTour.UI
 
         private void GoToMainMenu()
         {
+            if (ArtworkSessionCache.Instance != null)
+            {
+                ArtworkSessionCache.Instance.Clear();
+                Destroy(ArtworkSessionCache.Instance.gameObject);
+            }
+
             SceneManager.LoadScene(mainMenuSceneName);
         }
 

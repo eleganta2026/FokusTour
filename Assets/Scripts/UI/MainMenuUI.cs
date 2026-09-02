@@ -1,3 +1,5 @@
+using System.Collections;
+using FokusTour.Api;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,6 +17,10 @@ namespace FokusTour.UI
     {
         [Header("Scene")]
         [SerializeField] private string gallerySceneName = "MainScene";
+
+        [Header("API")]
+        [Tooltip("Preferred API URL. App tries HTTPS first, then HTTP.")]
+        [SerializeField] private string apiUrl = ApiEndpoint.HttpsApiUrl;
 
         [Header("Content")]
         [SerializeField] [TextArea(4, 12)]
@@ -88,6 +94,10 @@ namespace FokusTour.UI
         private RectTransform _infoContent;
         private Sprite _roundedCardSprite;
         private Sprite _roundedButtonSprite;
+        private GameObject _loadingPanel;
+        private TextMeshProUGUI _loadingStatusText;
+        private Button _startTourButton;
+        private bool _isStartingTour;
         private const float LogoSize = 180f;
         private const float LogoSpacing = 24f;
 
@@ -146,6 +156,7 @@ namespace FokusTour.UI
             CreateBackground(canvasObject.transform);
             CreateMenuCard(canvasObject.transform);
             CreateInfoPanel(canvasObject.transform);
+            CreateLoadingPanel(canvasObject.transform);
         }
 
         private void CreateBackground(Transform parent)
@@ -183,10 +194,44 @@ namespace FokusTour.UI
             float buttonGap = 88f;
             Vector2 buttonSize = new Vector2(420f, 72f);
 
-            CreateMenuButton(card.transform, "Mulai Tour", buttonSize, buttonY, primaryButtonColor, primaryButtonLabelColor, StartTour);
+            _startTourButton = CreateMenuButton(card.transform, "Mulai Tour", buttonSize, buttonY, primaryButtonColor, primaryButtonLabelColor, StartTour);
             CreateMenuButton(card.transform, "Sejarah UKM Fokus", buttonSize, buttonY - buttonGap, buttonColor, buttonLabelColor, ShowSejarah);
             CreateMenuButton(card.transform, "Tentang Pembuat", buttonSize, buttonY - buttonGap * 2f, buttonColor, buttonLabelColor, ShowTentangPembuat);
             CreateMenuButton(card.transform, "Keluar", buttonSize, buttonY - buttonGap * 3f, buttonColor, buttonLabelColor, QuitApp);
+        }
+
+        private void CreateLoadingPanel(Transform parent)
+        {
+            Image dimmer = CreateImage("LoadingDimmer", parent);
+            StretchFull(dimmer.rectTransform);
+            dimmer.color = new Color(0f, 0f, 0f, 0.72f);
+            dimmer.raycastTarget = true;
+
+            Image card = CreateImage("LoadingCard", dimmer.transform);
+            RectTransform cardRect = card.rectTransform;
+            cardRect.anchorMin = new Vector2(0.5f, 0.5f);
+            cardRect.anchorMax = new Vector2(0.5f, 0.5f);
+            cardRect.pivot = new Vector2(0.5f, 0.5f);
+            cardRect.sizeDelta = new Vector2(640f, 260f);
+            ApplyRoundedSprite(card, _roundedCardSprite, cardColor, 1.15f);
+
+            TextMeshProUGUI title = CreateText("LoadingTitle", card.transform, "Memuat Tour", 36f, FontStyles.Bold, titleColor);
+            SetTopCenter(title.rectTransform, 0f, -36f, 560f, 48f);
+
+            _loadingStatusText = CreateText(
+                "LoadingStatus",
+                card.transform,
+                "Memuat data karya...",
+                24f,
+                FontStyles.Normal,
+                subtitleColor);
+            SetTopCenter(_loadingStatusText.rectTransform, 0f, -110f, 560f, 80f);
+            _loadingStatusText.textWrappingMode = TextWrappingModes.Normal;
+
+            CreateMenuButton(card.transform, "Batal", new Vector2(180f, 52f), 0f, buttonColor, buttonLabelColor, CancelStartTour, true);
+
+            _loadingPanel = dimmer.gameObject;
+            _loadingPanel.SetActive(false);
         }
 
         private void CreateInfoPanel(Transform parent)
@@ -288,7 +333,7 @@ namespace FokusTour.UI
             _infoContent.anchoredPosition = Vector2.zero;
         }
 
-        private void CreateMenuButton(
+        private Button CreateMenuButton(
             Transform parent,
             string label,
             Vector2 size,
@@ -330,11 +375,85 @@ namespace FokusTour.UI
             StretchFull(text.rectTransform);
             text.alignment = TextAlignmentOptions.Center;
             text.raycastTarget = false;
+            return button;
         }
 
         private void StartTour()
         {
+            if (_isStartingTour)
+                return;
+
+            StartCoroutine(StartTourRoutine());
+        }
+
+        private IEnumerator StartTourRoutine()
+        {
+            _isStartingTour = true;
+            if (_startTourButton != null)
+                _startTourButton.interactable = false;
+
+            ShowLoadingPanel("Menghubungkan ke server...");
+
+            ArtworkSessionCache cache = ArtworkSessionCache.EnsureExists();
+            yield return cache.Prefetch(apiUrl, SetLoadingStatus);
+
+            if (!_isStartingTour)
+                yield break;
+
+            if (!cache.IsReady)
+            {
+                string error = string.IsNullOrEmpty(cache.LastError)
+                    ? "Gagal memuat data karya."
+                    : cache.LastError;
+                SetLoadingStatus(error + "\nPeriksa koneksi / server API, lalu coba lagi.");
+                yield return new WaitForSecondsRealtime(2.2f);
+
+                HideLoadingPanel();
+                _isStartingTour = false;
+                if (_startTourButton != null)
+                    _startTourButton.interactable = true;
+                yield break;
+            }
+
+            SetLoadingStatus("Membuka tour...");
+            yield return null;
             SceneManager.LoadScene(gallerySceneName);
+        }
+
+        private void CancelStartTour()
+        {
+            if (!_isStartingTour)
+            {
+                HideLoadingPanel();
+                return;
+            }
+
+            StopAllCoroutines();
+            ArtworkSessionCache.Instance?.Clear();
+            HideLoadingPanel();
+            _isStartingTour = false;
+            if (_startTourButton != null)
+                _startTourButton.interactable = true;
+        }
+
+        private void ShowLoadingPanel(string status)
+        {
+            if (_loadingPanel != null)
+                _loadingPanel.SetActive(true);
+
+            SetLoadingStatus(status);
+        }
+
+        private void HideLoadingPanel()
+        {
+            if (_loadingPanel != null)
+                _loadingPanel.SetActive(false);
+        }
+
+        private void SetLoadingStatus(string status)
+        {
+            if (_loadingStatusText != null)
+                _loadingStatusText.text = status;
         }
 
         private void ShowSejarah()
